@@ -6,6 +6,7 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { NoticiaController } from './../src/noticia/noticia.controller';
 import { NoticiaService } from './../src/noticia/noticia.service';
+import { NoticiaCacheService } from './../src/noticia/noticia-cache.service';
 import { Noticia } from './../src/noticia/entities/noticia.entity';
 
 const feature = loadFeature('./test/features/criacao-noticia.feature');
@@ -26,6 +27,7 @@ defineFeature(feature, (test) => {
       controllers: [NoticiaController],
       providers: [
         NoticiaService,
+        NoticiaCacheService,
         { provide: getRepositoryToken(Noticia), useValue: noticiaRepositoryMock },
       ],
     }).compile();
