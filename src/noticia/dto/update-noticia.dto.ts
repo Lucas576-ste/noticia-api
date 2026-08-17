@@ -1,5 +1,13 @@
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
 export class UpdateNoticiaDto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
   titulo?: string;
-  conteudo?: string;
-  autor?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  descricao?: string;
 }

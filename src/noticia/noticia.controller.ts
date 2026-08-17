@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Patch,
@@ -12,7 +14,7 @@ import { NoticiaService } from './noticia.service';
 import { CreateNoticiaDto } from './dto/create-noticia.dto';
 import { UpdateNoticiaDto } from './dto/update-noticia.dto';
 
-@Controller('noticia')
+@Controller('noticias')
 export class NoticiaController {
   constructor(private readonly noticiaService: NoticiaService) {}
 
@@ -40,6 +42,7 @@ export class NoticiaController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.noticiaService.remove(id);
   }
