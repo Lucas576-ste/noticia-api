@@ -1,10 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('noticias')
 export class Noticia {
@@ -15,14 +9,5 @@ export class Noticia {
   titulo: string;
 
   @Column('text')
-  conteudo: string;
-
-  @Column()
-  autor: string;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
+  descricao: string;
 }

@@ -5,6 +5,8 @@
 .env
 .env.*.local
 
+/PROVA-TECNICA.md
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
