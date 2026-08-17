@@ -117,3 +117,59 @@ Resposta:
 `POST`/`PATCH` validam o corpo via `class-validator` (DTOs em `src/noticia/dto/`). O `ValidationPipe`
 global (`src/main.ts`) usa `whitelist` + `forbidNonWhitelisted`: campos fora do DTO (ex: `autor`,
 `conteudo`) são rejeitados com `400`, não apenas ignorados.
+
+## Estrutura do projeto e decisões técnicas
+
+```
+src/
+  main.ts               # bootstrap + ValidationPipe global
+  app.module.ts          # conexão TypeORM + registro dos módulos de feature
+  noticia/
+    entities/              # entidades TypeORM (schema do banco)
+    dto/                    # contrato de entrada da API (create/update)
+    noticia.controller.ts    # rotas HTTP
+    noticia.service.ts       # regras de negócio + acesso ao Repository
+    noticia.module.ts        # liga controller/service/repository
+```
+
+### Camadas e padrão de módulo
+
+Cada feature (hoje só `noticia`) é um módulo autocontido: `controller` (HTTP) → `service` (regra de
+negócio) → `Repository` do TypeORM (persistência), com `entities/` e `dto/` isolando,
+respectivamente, o schema do banco e o contrato da API. O controller nunca fala direto com o
+`Repository` — sempre passa pelo service. Isso mantém cada camada substituível de forma isolada: dá
+pra trocar a origem dos dados (outro banco, outro ORM, uma API externa) reimplementando só o
+`service`/`Repository`, sem tocar no `controller` nem no contrato HTTP.
+
+### Por que DTOs + `ValidationPipe` global
+
+DTOs (`CreateNoticiaDto`/`UpdateNoticiaDto`) descrevem exatamente o que a API aceita, com validação
+via `class-validator` diretamente nas propriedades. Como o `ValidationPipe` é global
+(`src/main.ts`), toda rota nova ganha validação de payload automaticamente, sem precisar repetir
+lógica de validação em cada controller — reduz boilerplate e evita inconsistência conforme a API
+cresce.
+
+### Preparação para escalar
+
+- **Novos módulos seguem o mesmo padrão**: adicionar uma nova entidade de domínio é criar uma pasta
+  `src/<feature>/` com a mesma forma (`entities/`, `dto/`, `*.controller.ts`, `*.service.ts`,
+  `*.module.ts`) e registrar o módulo em `app.module.ts` — sem precisar mexer nos módulos existentes.
+- **Camadas testáveis isoladamente**: os testes e2e (`test/noticia.e2e-spec.ts`) mockam o
+  `Repository` do TypeORM (`getRepositoryToken`), testando o `controller`+`service`+validação sem
+  precisar de banco real — o que mantém a suíte rápida e determinística à medida que mais endpoints
+  forem adicionados.
+- **Configuração via ambiente**: toda credencial/host de banco vem de variáveis de ambiente
+  (`DB_*`), então o mesmo build (imagem Docker) roda em ambientes diferentes (dev, CI, produção)
+  sem alterar código, só variando as env vars — inclusive trocando de instância/servidor de banco.
+
+### Banco de dados: `synchronize` vs. migrations
+
+`synchronize: true` foi usado na configuração do TypeORM (`src/app.module.ts`) por este ser um
+ambiente de teste/desenvolvimento. Em produção, a abordagem correta é desativar essa opção e usar
+migrations do TypeORM para versionar e aplicar alterações de schema de forma controlada.
+
+### Variáveis de ambiente e segredos
+
+`.env.example` documenta as variáveis de ambiente necessárias para conectar ao PostgreSQL
+(`DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_DATABASE`). O arquivo `.env` real está no
+`.gitignore` por conter credenciais e não deve ser commitado.
