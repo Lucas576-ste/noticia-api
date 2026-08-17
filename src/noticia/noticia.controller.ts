@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { NoticiaService } from './noticia.service';
 import { CreateNoticiaDto } from './dto/create-noticia.dto';
@@ -24,8 +25,16 @@ export class NoticiaController {
   }
 
   @Get()
-  findAll() {
-    return this.noticiaService.findAll();
+  findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+  ) {
+    return this.noticiaService.findAll(
+      Number(page) || 1,
+      Number(limit) || 10,
+      search,
+    );
   }
 
   @Get(':id')
