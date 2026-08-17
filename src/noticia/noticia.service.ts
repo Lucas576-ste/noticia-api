@@ -14,9 +14,11 @@ export class NoticiaService {
     private readonly noticiaCacheService: NoticiaCacheService,
   ) {}
 
-  create(createNoticiaDto: CreateNoticiaDto): Promise<Noticia> {
+  async create(createNoticiaDto: CreateNoticiaDto): Promise<Noticia> {
     const noticia = this.noticiaRepository.create(createNoticiaDto);
-    return this.noticiaRepository.save(noticia);
+    const saved = await this.noticiaRepository.save(noticia);
+    this.noticiaCacheService.clear();
+    return saved;
   }
 
   async findAll(page = 1, limit = 10, search?: string) {
@@ -58,11 +60,14 @@ export class NoticiaService {
   ): Promise<Noticia> {
     const noticia = await this.findOne(id);
     Object.assign(noticia, updateNoticiaDto);
-    return this.noticiaRepository.save(noticia);
+    const saved = await this.noticiaRepository.save(noticia);
+    this.noticiaCacheService.clear();
+    return saved;
   }
 
   async remove(id: number): Promise<void> {
     const noticia = await this.findOne(id);
     await this.noticiaRepository.remove(noticia);
+    this.noticiaCacheService.clear();
   }
 }
