@@ -66,3 +66,23 @@ Para derrubar:
 ```bash
 docker compose down
 ```
+
+## Rodando os testes
+
+```bash
+# testes unitários
+npm run test
+
+# testes e2e / BDD (jest-cucumber)
+npm run test:e2e
+```
+
+- `npm run test` roda os specs unitários (`src/**/*.spec.ts`).
+- `npm run test:e2e` roda `test/app.e2e-spec.ts` e `test/noticia.e2e-spec.ts` — este último são os
+  cenários BDD de criação de notícia, escritos em Gherkin (`test/features/criacao-noticia.feature`)
+  e ligados via `jest-cucumber`. Nenhum dos dois precisa de um PostgreSQL real: o `Repository` do
+  TypeORM é mockado nos testes de `noticia.e2e-spec.ts`.
+
+**Dentro do container**: a imagem de produção gerada pelo `Dockerfile` não inclui `devDependencies`
+nem a pasta `test/` (removidos de propósito para manter a imagem enxuta) — os testes não rodam
+dentro dela. Rode os testes no host, como acima, antes ou depois de usar o Docker Compose.
