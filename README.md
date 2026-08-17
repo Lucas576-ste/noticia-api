@@ -86,3 +86,34 @@ npm run test:e2e
 **Dentro do container**: a imagem de produção gerada pelo `Dockerfile` não inclui `devDependencies`
 nem a pasta `test/` (removidos de propósito para manter a imagem enxuta) — os testes não rodam
 dentro dela. Rode os testes no host, como acima, antes ou depois de usar o Docker Compose.
+
+## Endpoints
+
+Base: `/noticias`
+
+| Método   | Rota             | Descrição                                              |
+|----------|------------------|----------------------------------------------------------|
+| `POST`   | `/noticias`      | Cria uma notícia (`{ titulo, descricao }`)               |
+| `GET`    | `/noticias`      | Lista notícias, paginado e filtrável (ver query params)  |
+| `GET`    | `/noticias/:id`  | Busca uma notícia por id (`404` se não existir)          |
+| `PATCH`  | `/noticias/:id`  | Atualiza `titulo` e/ou `descricao` de uma notícia         |
+| `DELETE` | `/noticias/:id`  | Remove uma notícia (`204 No Content`)                     |
+
+### Query params de `GET /noticias`
+
+| Param    | Obrigatório | Padrão | Descrição                                              |
+|----------|-------------|--------|----------------------------------------------------------|
+| `page`   | não         | `1`    | Página atual                                              |
+| `limit`  | não         | `10`   | Itens por página                                          |
+| `search` | não         | —      | Filtra por `titulo` OU `descricao` (case-insensitive, `ILIKE`) |
+
+Resposta:
+```json
+{ "data": [ { "id": 1, "titulo": "...", "descricao": "..." } ], "total": 1, "page": 1, "limit": 10 }
+```
+
+### Validação de payload
+
+`POST`/`PATCH` validam o corpo via `class-validator` (DTOs em `src/noticia/dto/`). O `ValidationPipe`
+global (`src/main.ts`) usa `whitelist` + `forbidNonWhitelisted`: campos fora do DTO (ex: `autor`,
+`conteudo`) são rejeitados com `400`, não apenas ignorados.
